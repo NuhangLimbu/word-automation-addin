@@ -1,4 +1,5 @@
 fastapi
 uvicorn
+gunicorn
 supabase
 python-multipart

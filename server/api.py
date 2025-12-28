@@ -1,23 +1,28 @@
 import os
-from fastapi import FastAPI
-from supabase import create_client
+from fastapi import FastAPI, HTTPException
+from supabase import create_client, Client
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 app = FastAPI()
 
-# This allows your Netlify frontend to talk to your Render API
+# Enable CORS for Netlify
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Use Environment Variables (Set these on Render.com settings)
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://fcmmokhuidixdfgetiab.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "your-key-here")
+# Configuration from Environment Variables
+URL = os.environ.get("SUPABASE_URL", "https://fcmmokhuidixdfgetiab.supabase.co")
+KEY = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(URL, KEY)
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+class Rule(BaseModel):
+    find_text: str
+    replace_text: str
+    category: str = "General"
 
 @app.get("/")
 def home():
@@ -25,12 +30,10 @@ def home():
 
 @app.get("/rules")
 def get_rules():
-    # This fetches rules from your Supabase cloud table
     response = supabase.table("rules").select("*").execute()
     return response.data
 
 @app.post("/rules")
-async def add_rule(rule: dict):
-    # This saves a new rule to Supabase
-    response = supabase.table("rules").insert(rule).execute()
+def add_rule(rule: Rule):
+    response = supabase.table("rules").insert(rule.dict()).execute()
     return response.data
