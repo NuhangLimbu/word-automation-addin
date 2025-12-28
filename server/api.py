@@ -6,12 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# 1. SECURITY MIDDLEWARE (Fixes "Refused to Connect" & "Blank Screen")
+# 1. THE CRITICAL FIX: Security Middleware
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
     
-    # Allows Word to embed your site and lets your app talk to AI services
+    # Allows Word to 'frame' your app and allows your app to talk to AI APIs
     csp_policy = (
         "default-src 'self' https://*.onrender.com; "
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://appsforoffice.microsoft.com; "
@@ -22,13 +22,13 @@ async def add_security_headers(request: Request, call_next):
     
     response.headers["Content-Security-Policy"] = csp_policy
     
-    # Explicitly allow framing by removing the block header
+    # FIXES: "Refused to connect" - removes the block on iframes
     if "X-Frame-Options" in response.headers:
         del response.headers["X-Frame-Options"]
         
     return response
 
-# 2. CORS SETTINGS
+# 2. CORS (standard)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -37,11 +37,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 3. PATH LOGIC
+# 3. STATIC FILES SETUP
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIST_DIR = os.path.join(BASE_DIR, "dist")
 
-# 4. SERVING FRONTEND FILES
 if os.path.exists(DIST_DIR):
     app.mount("/assets", StaticFiles(directory=os.path.join(DIST_DIR, "assets")), name="assets")
 
@@ -50,9 +49,8 @@ async def serve_index():
     index_path = os.path.join(DIST_DIR, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path)
-    return {"error": "Frontend build not found. Ensure 'npm run build' was successful."}
+    return {"error": "Dist folder not found. Build may have failed."}
 
-# Catch-all for React routing
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
     file_path = os.path.join(DIST_DIR, full_path)
