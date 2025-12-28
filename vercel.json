@@ -9,7 +9,7 @@
         },
         {
           "key": "X-Frame-Options",
-          "value": "ALLOW-FROM https://*.officeapps.live.com"
+          "value": "ALLOWALL"
         }
       ]
     }
