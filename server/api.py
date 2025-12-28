@@ -8,39 +8,60 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# 1. Enable CORS for local testing and Office
+# 1. Enable CORS
+# Essential for MS Word to allow the Task Pane to talk to this Python API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Allows all origins for development; narrow this down later
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# 2. Supabase Config (Ensure these are in Render Env Vars)
-URL = os.environ.get("https://fcmmokhuidixdfgetiab.supabase.co")
-KEY = os.environ.get("sb_publishable_ojoburrW4rr-G17T1sEztg_EBXbnlQV")
-supabase: Client = create_client(URL, KEY)
+# 2. Supabase Config (Safe Fetching)
+# We fetch by LABEL (Key), not the actual secret value
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
-# 3. Path Logic: Look "up" one level from /server to find /dist
+# Safety Check: Prevents the "NoneType" crash you had earlier
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("CRITICAL: Supabase environment variables are missing!")
+    supabase = None
+else:
+    # Initialize the client only if variables exist
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# 3. Path Logic for Monorepo
+# Finds the /dist folder (React) sitting outside the /server folder
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIST_DIR = os.path.join(BASE_DIR, "dist")
 
 # --- API ROUTES ---
+
 @app.get("/rules")
 def get_rules():
-    response = supabase.table("rules").select("*").execute()
-    return response.data
+    if not supabase:
+        return {"error": "Supabase not configured in Render environment variables."}
+    try:
+        # Fetches your automation rules from Supabase
+        response = supabase.table("rules").select("*").execute()
+        return response.data
+    except Exception as e:
+        return {"error": str(e)}
 
-# --- THE 404 FIX: SERVING THE FRONTEND ---
+# --- SERVING THE FRONTEND (For MS Word Task Pane) ---
+
 @app.get("/index.html")
 async def serve_index():
-    # This sends the actual HTML file to MS Word
     return FileResponse(os.path.join(DIST_DIR, "index.html"))
 
 @app.get("/")
 async def serve_root():
-    return FileResponse(os.path.join(DIST_DIR, "index.html"))
+    index_path = os.path.join(DIST_DIR, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"message": "Python API is running, but React 'dist' folder was not found."}
 
-# Mount the rest of the assets (JS/CSS)
+# Mount static files (JS/CSS) last
 if os.path.exists(DIST_DIR):
     app.mount("/", StaticFiles(directory=DIST_DIR, html=True), name="static")
