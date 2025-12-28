@@ -6,73 +6,59 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MO
 
 // 1. AI Summarize
 export const summarizeSelection = async () => {
-  return Word.run(async (context) => {
-    const selection = context.document.getSelection();
-    selection.load("text");
-    await context.sync();
+    return Word.run(async (context) => {
+        const selection = context.document.getSelection();
+        selection.load("text");
+        await context.sync();
 
-    if (!selection.text) throw new Error("Select text first.");
+        if (!selection.text) throw new Error("Please select some text first.");
 
-    const response = await fetch(GEMINI_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: `Summarize this in 3 bullets: ${selection.text}` }] }]
-      })
+        const response = await fetch(GEMINI_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `Summarize this in 3 short bullets: ${selection.text}` }] }]
+            })
+        });
+
+        const data = await response.json();
+        const summary = data.candidates[0].content.parts[0].text;
+
+        selection.insertText(`\n\n[AI SUMMARY]:\n${summary}\n`, "After");
+        await context.sync();
     });
-
-    const data = await response.json();
-    const summary = data.candidates[0].content.parts[0].text;
-
-    selection.insertText(`\n\n[AI SUMMARY]:\n${summary}\n`, "After");
-    await context.sync();
-  });
 };
 
-// 2. Hybrid Auto-Correction (Rules + AI)
+// 2. Hybrid Auto-Correction (Supabase Rules + AI)
 export const autoCorrectDocument = async (adminRules = []) => {
-  return Word.run(async (context) => {
-    const selection = context.document.getSelection();
-    selection.load("text");
-    await context.sync();
+    return Word.run(async (context) => {
+        const selection = context.document.getSelection();
+        selection.load("text");
+        await context.sync();
 
-    if (!selection.text) throw new Error("Select text first.");
+        if (!selection.text) throw new Error("Please select text to fix.");
 
-    let textToFix = selection.text;
+        let textToFix = selection.text;
 
-    // Apply Admin Rules (from Python)
-    adminRules.forEach(rule => {
-      const regex = new RegExp(rule.find, "gi");
-      textToFix = textToFix.replace(regex, rule.replace);
+        // Apply your Database Rules first
+        adminRules.forEach(rule => {
+            const regex = new RegExp(rule.pattern, "gi"); 
+            textToFix = textToFix.replace(regex, rule.replacement);
+        });
+
+        // Send to Gemini for final grammar polish
+        const response = await fetch(GEMINI_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `Fix grammar and spelling for this text, but keep it professional: ${textToFix}` }] }]
+            })
+        });
+
+        const data = await response.json();
+        const result = data.candidates[0].content.parts[0].text;
+
+        selection.insertText(result, "Replace");
+        await context.sync();
     });
-
-    // Final AI Polish
-    const response = await fetch(GEMINI_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: `Fix grammar and spelling: ${textToFix}` }] }]
-      })
-    });
-
-    const data = await response.json();
-    const result = data.candidates[0].content.parts[0].text;
-
-    selection.insertText(result, "Replace");
-    await context.sync();
-  });
-};
-
-// 3. Template Filler
-export const replacePlaceholders = async (data) => {
-  return Word.run(async (context) => {
-    const body = context.document.body;
-    for (const key in data) {
-      const searchResults = body.search(`{{${key}}}`, { matchCase: false });
-      searchResults.load("items");
-      await context.sync();
-      searchResults.items.forEach(item => item.insertText(String(data[key]), "Replace"));
-    }
-    await context.sync();
-  });
 };
