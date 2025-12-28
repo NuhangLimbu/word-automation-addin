@@ -5,19 +5,25 @@
            xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" 
            xsi:type="TaskPaneApp">
   <Id>6db1f855-5555-4444-8888-777777777777</Id>
-  <Version>1.0.0.8</Version> <ProviderName>Nuhang Limbu</ProviderName>
+  <Version>1.0.0.9</Version> 
+  <ProviderName>Nuhang Limbu</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Word Automator" />
   <Description DefaultValue="AI-powered text automation." />
   <IconUrl DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_32x1.png" />
-  <SupportUrl DefaultValue="https://word-automation-addin-1.onrender.com" />
   
+  <AppDomains>
+    <AppDomain>https://word-automation-addin-1.onrender.com</AppDomain>
+  </AppDomains>
+
   <Hosts>
     <Host Name="Document" />
   </Hosts>
+
   <DefaultSettings>
     <SourceLocation DefaultValue="https://word-automation-addin-1.onrender.com/index.html" />
   </DefaultSettings>
+
   <Permissions>ReadWriteDocument</Permissions>
 
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">

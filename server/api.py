@@ -17,8 +17,8 @@ app.add_middleware(
 )
 
 # 2. Supabase Config (Ensure these are in Render Env Vars)
-URL = os.environ.get("SUPABASE_URL")
-KEY = os.environ.get("SUPABASE_KEY")
+URL = os.environ.get("https://fcmmokhuidixdfgetiab.supabase.co")
+KEY = os.environ.get("sb_publishable_ojoburrW4rr-G17T1sEztg_EBXbnlQV")
 supabase: Client = create_client(URL, KEY)
 
 # 3. Path Logic: Look "up" one level from /server to find /dist
