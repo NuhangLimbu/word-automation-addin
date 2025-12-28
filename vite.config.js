@@ -8,6 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  base: "./", // 👈 ADD THIS LINE TO FIX THE BLANK SCREEN
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

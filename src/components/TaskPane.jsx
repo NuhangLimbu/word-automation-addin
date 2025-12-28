@@ -1,89 +1,60 @@
+/* global Office */
 import React, { useEffect, useState } from "react";
-import { summarizeSelection, autoCorrectDocument } from "./wordActions";
+// Go UP one level out of components, then INTO services
+import { summarizeSelection, autoCorrectGrammar, autoFillTemplate } from "../services/wordActions";
 
-const API_URL = "https://word-automation-addin.onrender.com/rules";
+export default function TaskPane() {
+  const [isReady, setIsReady] = useState(false);
+  const [status, setStatus] = useState("Initializing...");
 
-const TaskPane = () => {
-    const [rules, setRules] = useState([]);
+  useEffect(() => {
+    Office.onReady((info) => {
+      if (info.host === Office.HostType.Word) {
+        setIsReady(true);
+        setStatus("Connected to Word");
+      }
+    });
+  }, []);
 
-    // Fetch Database Rules on Load
-    useEffect(() => {
-        fetch(API_URL)
-            .then((res) => res.json())
-            .then((data) => setRules(data))
-            .catch((err) => console.error("Error fetching rules:", err));
-    }, []);
+  const handleAction = async (fn) => {
+    setStatus("Working...");
+    try {
+      await fn();
+      setStatus("Success!");
+    } catch (err) {
+      setStatus("Error: " + err.message);
+    }
+  };
 
-    // Function for individual rule buttons
-    const applySingleRule = async (pattern, replacement) => {
-        await Word.run(async (context) => {
-            const results = context.document.body.search(pattern, { matchCase: false });
-            results.load("items");
-            await context.sync();
-            results.items.forEach(item => item.insertText(replacement, "Replace"));
-            await context.sync();
-        });
-    };
+  if (!isReady) return <div className="p-5">Connecting to Office...</div>;
 
-    return (
-        <div style={{ padding: "15px", fontFamily: "'Segoe UI', Tahoma, sans-serif" }}>
-            <h2 style={{ color: "#2b579a", borderBottom: "2px solid #2b579a" }}>AI Assistant</h2>
-            
-            <div style={{ marginBottom: "20px" }}>
-                <button 
-                    onClick={summarizeSelection}
-                    style={aiButtonStyle("#0078d4")}
-                >
-                    ✨ Summarize Selected
-                </button>
-                
-                <button 
-                    onClick={() => autoCorrectDocument(rules)}
-                    style={aiButtonStyle("#107c10")}
-                >
-                    🪄 AI Auto-Correct (Full)
-                </button>
-            </div>
+  return (
+    <div className="p-5 font-sans">
+      <h2 className="text-xl font-bold mb-4 text-blue-800">Word Automator</h2>
+      <p className="text-sm mb-4 text-gray-500">Status: {status}</p>
 
-            <h2 style={{ color: "#2b579a", borderBottom: "2px solid #2b579a" }}>Quick Fixes</h2>
-            {rules.length === 0 ? <p>Syncing rules...</p> : (
-                rules.map((rule) => (
-                    <button 
-                        key={rule.id} 
-                        onClick={() => applySingleRule(rule.pattern, rule.replacement)}
-                        style={ruleButtonStyle}
-                    >
-                        {rule.label}
-                    </button>
-                ))
-            )}
-        </div>
-    );
-};
+      <div className="flex flex-col gap-2">
+        <button 
+          onClick={() => handleAction(summarizeSelection)} 
+          className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-bold"
+        >
+          ✨ AI Summarize
+        </button>
 
-// --- Simple Styles ---
-const aiButtonStyle = (color) => ({
-    display: "block",
-    width: "100%",
-    padding: "12px",
-    margin: "10px 0",
-    backgroundColor: color,
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontWeight: "bold"
-});
+        <button 
+          onClick={() => handleAction(autoCorrectGrammar)} 
+          className="bg-green-600 text-white p-2 rounded hover:bg-green-700 font-bold"
+        >
+          🪄 AI Grammar Fix
+        </button>
 
-const ruleButtonStyle = {
-    display: "block",
-    width: "100%",
-    padding: "10px",
-    margin: "5px 0",
-    backgroundColor: "#f3f2f1",
-    border: "1px solid #d2d0ce",
-    textAlign: "left",
-    cursor: "pointer"
-};
-
-export default TaskPane;
+        <button 
+          onClick={() => handleAction(autoFillTemplate)} 
+          className="bg-gray-600 text-white p-2 rounded hover:bg-gray-700 font-bold"
+        >
+          📝 Fill {{name}}
+        </button>
+      </div>
+    </div>
+  );
+}
