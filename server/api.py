@@ -3,11 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# THIS IS THE FIX FOR THE BLANK SCREEN
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
-    # This allows the app to load inside Word's frame and talk to your APIs
+    # This header allows your app to load in Word and talk to Google/Supabase
     response.headers["Content-Security-Policy"] = (
         "default-src 'self' https://*.onrender.com; "
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://appsforoffice.microsoft.com; "
@@ -17,7 +16,7 @@ async def add_security_headers(request: Request, call_next):
     )
     return response
 
-# Standard CORS
+# Standard CORS stays below the middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
