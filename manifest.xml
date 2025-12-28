@@ -4,13 +4,16 @@
            xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" 
            xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" 
            xsi:type="TaskPaneApp">
+  
   <Id>6db1f855-5555-4444-8888-777777777777</Id>
-  <Version>1.0.0.9</Version> 
+  <Version>1.0.1.5</Version> 
   <ProviderName>Nuhang Limbu</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="Word Automator" />
-  <Description DefaultValue="AI-powered text automation." />
+  <DisplayName DefaultValue="Word Automator AI" />
+  <Description DefaultValue="AI-powered text summarization and automation." />
   <IconUrl DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_32x1.png" />
+  
+  <SupportUrl DefaultValue="https://python-3-cxjw.onrender.com/" />
   
   <AppDomains>
     <AppDomain>https://python-3-cxjw.onrender.com</AppDomain>
@@ -21,7 +24,7 @@
   </Hosts>
 
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://python-3-cxjw.onrender.com/index.html" />
+    <SourceLocation DefaultValue="https://python-3-cxjw.onrender.com/" />
   </DefaultSettings>
 
   <Permissions>ReadWriteDocument</Permissions>
@@ -62,22 +65,26 @@
         </DesktopFormFactor>
       </Host>
     </Hosts>
+    
     <Resources>
       <bt:Images>
         <bt:Image id="Icon.16x16" DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_16x1.png" />
         <bt:Image id="Icon.32x32" DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_32x1.png" />
         <bt:Image id="Icon.80x80" DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_80x1.png" />
       </bt:Images>
+      
       <bt:Urls>
-        <bt:Url id="Commands.Url" DefaultValue="https://python-3-cxjw.onrender.com/index.html" />
-        <bt:Url id="Taskpane.Url" DefaultValue="https://python-3-cxjw.onrender.com/index.html" />
+        <bt:Url id="Commands.Url" DefaultValue="https://python-3-cxjw.onrender.com/" />
+        <bt:Url id="Taskpane.Url" DefaultValue="https://python-3-cxjw.onrender.com/" />
       </bt:Urls>
+      
       <bt:ShortStrings>
-        <bt:String id="CommandsGroup.Label" DefaultValue="Automator" />
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Open Automator" />
+        <bt:String id="CommandsGroup.Label" DefaultValue="AI Automator" />
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Open AI Tools" />
       </bt:ShortStrings>
+      
       <bt:LongStrings>
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Opens the AI tool panel." />
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Click to open the AI Summarizer and Template filler." />
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
