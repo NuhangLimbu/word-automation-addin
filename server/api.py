@@ -1,24 +1,28 @@
-# --- SERVING THE FRONTEND ---
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+# ... other imports ...
 
-# 1. Mount the static files (CSS, JS, Images) FIRST
-if os.path.exists(DIST_DIR):
-    # We mount this to /assets or specific folders if needed, 
-    # but mounting to root works if we handle the index file carefully.
-    app.mount("/assets", StaticFiles(directory=os.path.join(DIST_DIR, "assets")), name="assets")
+app = FastAPI()
 
-# 2. Explicitly serve index.html for the root
-@app.get("/")
-async def serve_root():
-    index_path = os.path.join(DIST_DIR, "index.html")
-    if os.path.exists(index_path):
-        return FileResponse(index_path)
-    return {"error": f"Frontend build not found at {index_path}. Check Render build logs."}
+# ADD THIS MIDDLEWARE TO FIX THE CSP BLOCKS
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    # This header allows Word to run your scripts and talk to your AI
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self' https://python-3-cxjw.onrender.com; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://appsforoffice.microsoft.com; "
+        "style-src 'self' 'unsafe-inline'; "
+        "connect-src 'self' https://generativelanguage.googleapis.com https://*.supabase.co; "
+        "frame-ancestors 'self' https://*.officeapps.live.com https://*.office.com;"
+    )
+    return response
 
-# 3. Catch-all for React Routing (Optional but helpful)
-@app.get("/{full_path:path}")
-async def serve_any(full_path: str):
-    file_path = os.path.join(DIST_DIR, full_path)
-    if os.path.exists(file_path):
-        return FileResponse(file_path)
-    # Fallback to index.html for SPA routing
-    return FileResponse(os.path.join(DIST_DIR, "index.html"))
+# Ensure CORS is still there
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
