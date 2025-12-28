@@ -1,60 +1,58 @@
 /* global Office */
 import React, { useEffect, useState } from "react";
-// Go UP one level out of components, then INTO services
-import { summarizeSelection, autoCorrectGrammar, autoFillTemplate } from "../services/wordActions";
+import { summarizeSelection, autoFillTemplate } from "../services/wordActions";
 
 export default function TaskPane() {
   const [isReady, setIsReady] = useState(false);
-  const [status, setStatus] = useState("Initializing...");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     Office.onReady((info) => {
-      if (info.host === Office.HostType.Word) {
-        setIsReady(true);
-        setStatus("Connected to Word");
-      }
+      if (info.host === Office.HostType.Word) setIsReady(true);
     });
   }, []);
 
-  const handleAction = async (fn) => {
-    setStatus("Working...");
+  const handleAction = async (actionFn) => {
+    setLoading(true);
     try {
-      await fn();
-      setStatus("Success!");
+      await actionFn();
     } catch (err) {
-      setStatus("Error: " + err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!isReady) return <div className="p-5">Connecting to Office...</div>;
+  if (!isReady) return <div className="p-10 text-center font-sans">Connecting to Word...</div>;
 
   return (
-    <div className="p-5 font-sans">
-      <h2 className="text-xl font-bold mb-4 text-blue-800">Word Automator</h2>
-      <p className="text-sm mb-4 text-gray-500">Status: {status}</p>
-
-      <div className="flex flex-col gap-2">
+    <div className="p-6 font-sans">
+      <header className="mb-8">
+        <h1 className="text-2xl font-black text-blue-700">Automator AI</h1>
+        <p className="text-xs text-gray-500 uppercase tracking-widest">v1.0.4 - Production</p>
+      </header>
+      
+      <div className="flex flex-col gap-4">
         <button 
-          onClick={() => handleAction(summarizeSelection)} 
-          className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-bold"
+          disabled={loading}
+          onClick={() => handleAction(summarizeSelection)}
+          className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
         >
-          ✨ AI Summarize
+          {loading ? "Processing..." : "✨ AI Summarize"}
         </button>
 
         <button 
-          onClick={() => handleAction(autoCorrectGrammar)} 
-          className="bg-green-600 text-white p-2 rounded hover:bg-green-700 font-bold"
-        >
-          🪄 AI Grammar Fix
-        </button>
-
-        <button 
-          onClick={() => handleAction(autoFillTemplate)} 
-          className="bg-gray-600 text-white p-2 rounded hover:bg-gray-700 font-bold"
+          disabled={loading}
+          onClick={() => handleAction(autoFillTemplate)}
+          className="w-full bg-white text-gray-800 font-bold py-4 rounded-xl border-2 border-gray-200 hover:bg-gray-50 active:scale-95 transition-all"
         >
           📝 Fill {{name}}
         </button>
       </div>
+
+      <footer className="mt-20 text-center border-t pt-4">
+        <p className="text-[10px] text-gray-400">Deployed via Vercel & GitHub</p>
+      </footer>
     </div>
   );
 }
