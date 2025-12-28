@@ -5,19 +5,18 @@
            xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" 
            xsi:type="TaskPaneApp">
   <Id>6db1f855-5555-4444-8888-777777777777</Id>
-  <Version>1.0.0.7</Version>
-  <ProviderName>Nuhang Limbu</ProviderName>
+  <Version>1.0.0.8</Version> <ProviderName>Nuhang Limbu</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Word Automator" />
   <Description DefaultValue="AI-powered text automation." />
   <IconUrl DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_32x1.png" />
-  <SupportUrl DefaultValue="https://word-automation-addin-8q3fmi9h9-nuhanglimbus-projects.vercel.app/" />
+  <SupportUrl DefaultValue="https://word-automation-addin-1.onrender.com" />
   
   <Hosts>
     <Host Name="Document" />
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://word-automation-addin-8q3fmi9h9-nuhanglimbus-projects.vercel.app/index.html" />
+    <SourceLocation DefaultValue="https://word-automation-addin-1.onrender.com/index.html" />
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
 
@@ -64,8 +63,8 @@
         <bt:Image id="Icon.80x80" DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_80x1.png" />
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Commands.Url" DefaultValue="https://word-automation-addin-8q3fmi9h9-nuhanglimbus-projects.vercel.app/index.html" />
-        <bt:Url id="Taskpane.Url" DefaultValue="https://word-automation-addin-8q3fmi9h9-nuhanglimbus-projects.vercel.app/index.html" />
+        <bt:Url id="Commands.Url" DefaultValue="https://word-automation-addin-1.onrender.com/index.html" />
+        <bt:Url id="Taskpane.Url" DefaultValue="https://word-automation-addin-1.onrender.com/index.html" />
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="CommandsGroup.Label" DefaultValue="Automator" />
