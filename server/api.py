@@ -1,13 +1,14 @@
 import os
-from fastapi import FastAPI, HTTPException
-from supabase import create_client, Client
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from supabase import create_client, Client
 from pydantic import BaseModel
-from typing import List
 
 app = FastAPI()
 
-# Enable CORS so your React Frontend and Streamlit can talk to this API
+# 1. Enable CORS for local testing and Office
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,40 +16,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configuration from Render Environment Variables
+# 2. Supabase Config (Ensure these are in Render Env Vars)
 URL = os.environ.get("SUPABASE_URL")
 KEY = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(URL, KEY)
 
-# Data model for the Rule
-class Rule(BaseModel):
-    label: str
-    pattern: str
-    replacement: str
+# 3. Path Logic: Look "up" one level from /server to find /dist
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DIST_DIR = os.path.join(BASE_DIR, "dist")
 
-@app.get("/")
-def home():
-    return {"message": "Word Automator API is Live!"}
-
-# GET all rules (Used by Word Add-in and Admin Dashboard)
+# --- API ROUTES ---
 @app.get("/rules")
 def get_rules():
     response = supabase.table("rules").select("*").execute()
     return response.data
 
-# POST a new rule (Used by Admin Dashboard)
-@app.post("/rules")
-def add_rule(rule: Rule):
-    response = supabase.table("rules").insert(rule.dict()).execute()
-    return response.data
+# --- THE 404 FIX: SERVING THE FRONTEND ---
+@app.get("/index.html")
+async def serve_index():
+    # This sends the actual HTML file to MS Word
+    return FileResponse(os.path.join(DIST_DIR, "index.html"))
 
-# DELETE a rule (Used by Admin Dashboard)
-@app.delete("/rules/{rule_id}")
-def delete_rule(rule_id: int):
-    response = supabase.table("rules").delete().eq("id", rule_id).execute()
-    return {"status": "success", "message": f"Rule {rule_id} deleted"}
+@app.get("/")
+async def serve_root():
+    return FileResponse(os.path.join(DIST_DIR, "index.html"))
 
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+# Mount the rest of the assets (JS/CSS)
+if os.path.exists(DIST_DIR):
+    app.mount("/", StaticFiles(directory=DIST_DIR, html=True), name="static")

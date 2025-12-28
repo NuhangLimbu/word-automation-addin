@@ -1,21 +1,15 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from '@tailwindcss/vite';
-import { fileURLToPath } from "url";
-import path from "path";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  base: "./", // 👈 ADD THIS LINE TO FIX THE BLANK SCREEN
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+  plugins: [react()],
+  build: {
+    outDir: 'dist',
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+      },
     },
   },
-  server: {
-    host: true,
-    port: 5173
-  }
-});
+})
