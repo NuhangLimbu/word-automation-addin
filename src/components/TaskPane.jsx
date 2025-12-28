@@ -1,6 +1,7 @@
 /* global Office */
 import React, { useEffect, useState } from "react";
-import { summarizeSelection, autoFillTemplate } from "../services/wordActions";
+// This file must be updated to fetch from "/api/summarize"
+import { summarizeSelection, autoFillTemplate } from "../services/wordActions"; 
 
 export default function TaskPane() {
   const [isReady, setIsReady] = useState(false);
@@ -18,6 +19,8 @@ export default function TaskPane() {
       await actionFn();
     } catch (err) {
       console.error(err);
+      // Helpful for debugging during deployment
+      alert("Action failed: " + err.message); 
     } finally {
       setLoading(false);
     }
@@ -51,7 +54,7 @@ export default function TaskPane() {
       </div>
 
       <footer className="mt-20 text-center border-t pt-4">
-        <p className="text-[10px] text-gray-400">Deployed via Vercel & GitHub</p>
+        <p className="text-[10px] text-gray-400">Deployed via Render & GitHub</p>
       </footer>
     </div>
   );
